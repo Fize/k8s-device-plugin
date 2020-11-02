@@ -49,6 +49,10 @@ spec:
       - image: nvidia/k8s-device-plugin:v0.7.0
         name: nvidia-device-plugin-ctr
         args: ["--fail-on-init-error=false"]
+        env:
+          # Save 10% of GPU graphics memory to not participate in the allocation work
+          - name: RESERVED_MEM_PER_GPU
+            value: "10"
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:

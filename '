@@ -90,12 +90,15 @@ func getGPUMemory() uint {
 }
 
 func getReservedMemPerGPU() uint {
-	strPer := os.Getenv(envReservedMemPerGPU)
+	strPer, present := os.LookupEnv(envReservedMemPerGPU)
+	if !present {
+		return 0
+	}
 	rawPerGPU, err := strconv.Atoi(strPer)
 	if err != nil {
 		log.Panicf("Fatal: Could not parse %s environment variable: %v\n", envReservedMemPerGPU, err)
 	}
-	if rawPerGPU > 100 || rawPerGPU <= 0 {
+	if rawPerGPU > 100 {
 		log.Panicf("Fatal: invalid %s environment variable value: %v\n", envReservedMemPerGPU, rawPerGPU)
 	}
 	return uint(rawPerGPU)
@@ -126,6 +129,7 @@ func (g *GpuDeviceManager) Devices() []*Device {
 		_, err = fmt.Sscanf(d.Path, "/dev/nvidia%d", &id)
 		check(err)
 		realDevNames[d.UUID] = id
+		log.Println("# device Memory:", uint(*d.Memory))
 		if getGPUMemory() == uint(0) {
 			setGPUMemory(uint(*d.Memory))
 		}
@@ -137,9 +141,7 @@ func (g *GpuDeviceManager) Devices() []*Device {
 			continue
 		}
 
-		reserve := getReservedMemPerGPU()
-		actual := (getGPUMemory() / 100) * (100 - reserve)
-		log.Printf("device Memory is: %d, now reserve is %d, %d can use", uint(*d.Memory), reserve, actual)
+		actual := getGPUMemory() * (1 - (getReservedMemPerGPU() / 100))
 		for j := uint(0); j < actual; j++ {
 			fakeID := generateFakeDeviceID(d.UUID, j)
 			devs = append(devs, &Device{
@@ -150,8 +152,10 @@ func (g *GpuDeviceManager) Devices() []*Device {
 				},
 			})
 		}
+
 		// devs = append(devs, buildDevice(d))
 	}
+	log.Println("---------- device len:", len(devs))
 
 	return devs
 }

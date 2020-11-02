@@ -42,6 +42,7 @@ const (
 const (
 	deviceListAsVolumeMountsHostPath          = "/dev/null"
 	deviceListAsVolumeMountsContainerPathRoot = "/var/run/nvidia-container-devices"
+	envReservedMemPerGPU                      = "RESERVED_MEM_PER_GPU"
 )
 
 // NvidiaDevicePlugin implements the Kubernetes device plugin API

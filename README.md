@@ -1,3 +1,5 @@
+Fork of the NVIDIA device plugin for Kubernetes. Compute the gpu's video memory and allocate it through video memory
+
 # NVIDIA device plugin for Kubernetes
 
 ## Table of Contents
